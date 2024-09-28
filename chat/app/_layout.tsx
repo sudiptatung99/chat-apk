@@ -13,7 +13,7 @@ export default function RootLayout() {
 
 
   return (
-    <SocketContextProvider>
+    // <SocketContextProvider>
       <Stack>
         <Stack.Screen name="index" options={{
           headerShown: false
@@ -22,6 +22,6 @@ export default function RootLayout() {
           headerShown: false
         }} />
       </Stack>
-    </SocketContextProvider>
+    // </SocketContextProvider>
   );
 }

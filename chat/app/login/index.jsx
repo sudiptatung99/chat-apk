@@ -1,78 +1,73 @@
 import { View, Text, ScrollView, TextInput, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, StatusBar } from 'react-native';
-import React, { useContext, useRef, useState } from 'react'
-import { SocketContext } from "../SocketContect";
+import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocalSearchParams } from 'expo-router';
+import { io } from "socket.io-client";
+import * as Notifications from 'expo-notifications';
 
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
 
 const index = () => {
-    const [messages, setMessages] = useState([
-        { id: 1, sender: 'Sujit Paul', message: 'hii', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 2, sender: 'Sujit Paul', message: 'hi this is urgent task', date: '18/07/2024', senderType: 'user' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-        { id: 3, sender: 'Sudipta', message: 'ok', date: '18/07/2024', senderType: 'doer' },
-    ]);
-
+    const [messages, setMessages] = useState([]);
     const scrollViewRef = useRef();
-
-
-    const { socket } = useContext(SocketContext);
-
-
-
-
+    const { code } = useLocalSearchParams();
     const [inputMessage, setInputMessage] = useState('');
 
-    const handleSend = () => {
-        if (inputMessage.trim()) {
-            const newMessage = {
-                id: messages.length + 1,
-                sender: 'Sudipta',
-                message: inputMessage,
-                date: 'Today', // This would be dynamically set
-                senderType: 'doer',
-            };
-            setMessages([...messages, newMessage]);
-            setInputMessage('');
+    const socket = useMemo(() => io('https://chat-backend-32lj.onrender.com'), [])
+    useEffect(() => {
+        socket.on('connect', () => {
+            socket.emit('newUser', { code: code })
+        })
+        socket.on("recive", (data) => {
+            if (data.code == code) {
+                setMessages((prevMessages) => [...prevMessages, data]);
+            }
+        })
+        return () => {
+            socket.disconnect()
         }
-        socket.emit("sendMessage", {
-            taskId: "data.id",
-            data: "msgData.message",
-            position: "Tab",
-        });
+
+    }, []);
+
+
+    useEffect(() => {
+        (async () => {
+          if (Platform.OS === 'android') {
+            await Notifications.setNotificationChannelAsync('default', {
+              name: 'default',
+              importance: Notifications.AndroidImportance.MAX,
+              vibrationPattern: [0, 250, 250, 250],
+              lightColor: '#FF231F7C',
+            });
+          }
+        })();
+      }, []);
+
+
+
+
+
+
+    // Handle sending a message
+    const handleSend = async () => {
+        // console.log("trigger");
+
+        // await Notifications.scheduleNotificationAsync({
+        //     content: {
+        //       title: 'Hello!',
+        //       body: 'This is a local notification!',
+        //     },
+        //     trigger: { seconds: 1 },
+        //   });
+
+        if (!inputMessage.trim()) return;
+        socket.emit("message", { data: inputMessage, socketid: socket.id, code: code });
+        setInputMessage('');
         setTimeout(() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
         }, 100);
@@ -81,20 +76,23 @@ const index = () => {
     return (
         <View style={styles.container}>
             <StatusBar
-                barStyle="dark-content" // Controls the text color (dark or light)
-                backgroundColor="#E0F7FA" // Set your preferred background color
+                barStyle="dark-content"
+                backgroundColor="#E0F7FA"
             />
             <View style={styles.header}>
             </View>
+
             {/* Scrollable Messages Section */}
-            <ScrollView style={styles.scrollableSection} ref={scrollViewRef} onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}>
+            <ScrollView
+                style={styles.scrollableSection}
+                ref={scrollViewRef}
+                onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+            >
                 {messages.map((message, index) => (
-                    <View key={index} style={[styles.messageContainer, message.senderType === 'user' ? styles.userMessage : styles.doerMessage]}>
-                        <Text style={styles.sender}>{message.sender}</Text>
+                    <View key={index} style={[styles.messageContainer, message.socketid !== socket.id ? styles.userMessage : styles.doerMessage]}>
                         <View style={styles.messageBubble}>
-                            <Text style={styles.messageText}>{message.message}</Text>
+                            <Text style={styles.messageText}>{message.data}</Text>
                         </View>
-                        <Text style={styles.messageDate}>{message.date}</Text>
                     </View>
                 ))}
             </ScrollView>
@@ -115,7 +113,7 @@ const index = () => {
             </KeyboardAvoidingView>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -128,15 +126,6 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#ddd',
     },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    priority: {
-        color: 'red',
-        marginTop: 5,
-    },
     scrollableSection: {
         flex: 1,
         paddingHorizontal: 10,
@@ -145,6 +134,7 @@ const styles = StyleSheet.create({
     messageContainer: {
         marginBottom: 10,
         maxWidth: '80%',
+        paddingVertical: 10,
     },
     userMessage: {
         alignSelf: 'flex-end',
@@ -199,4 +189,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default index
+export default index;

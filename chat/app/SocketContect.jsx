@@ -7,12 +7,12 @@ export default function SocketContextProvider({ children }) {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        setSocket(io("http://localhost:4000"));
+        const newSocket = io('http://192.168.36.50:8000');
+        setSocket(newSocket);
+        return () => {
+            newSocket.close();
+        };
     }, []);
-
-    // useEffect(() => {
-    //     
-    // }, [userDetails, socket]);
 
     return (
         <SocketContext.Provider value={{ socket }}>

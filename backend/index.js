@@ -1,63 +1,63 @@
-const { Server } = require("socket.io");
-const http = require("http");
+import express from 'express'
+const port = 8000;
+import { Server } from 'socket.io';
+import { createServer } from 'http'
+// import { cors } from 'cors'
 
-// Create HTTP server
-const app = http.createServer();
+const app = express();
+const server = createServer(app)
 
-const io = new Server(app, {
+const io = new Server(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
 });
 
+// app.use(cors())
+
 let onlineUser = [];
 
-const addUser = (userId, socketId) => {
-  const userExists = onlineUser.find((user) => user.userId === userId);
+const addUser = (code, socketId) => {
+  const userExists = onlineUser.find((user) => user.socketId === socketId && user.code === code);
   if (!userExists) {
-    onlineUser.push({ userId, socketId });
-    console.log(`User ${userId} connected.`);
+    onlineUser.push({ socketId, code });
   }
 };
 
 const removeUser = (socketId) => {
   onlineUser = onlineUser.filter((user) => user.socketId !== socketId);
-  console.log(`User with socket ID ${socketId} disconnected.`);
 };
 
-const getUser = (userId) => {
-  return onlineUser.find((user) => user.userId === userId);
+
+const getUser = (socketId) => {
+  const user = onlineUser.find((user) => user.socketId === socketId);
+  return user;
 };
 
-// Handle new connections
-io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+io.on('connection', (socket) => {
 
-  socket.on("newUser", (userId) => {
-    addUser(userId, socket.id);
-  });
+  // socket.emit("welcome", "welcome to server")
 
-  socket.on("sendMessage", ({ receiverId, data }) => {
-    const receiver = getUser(receiverId);
-    if (receiver) {
-      io.to(receiver.socketId).emit("getMessage", data);
-      console.log(`Message sent to ${receiverId}`);
-    } else {
-      console.log(`User with ID ${receiverId} not found.`);
+  socket.on("newUser", ({ code }) => {
+    addUser(code, socket.id)
+  })
+
+  socket.on("message", ({ data, socketid, code }) => {
+    const receiveuser = getUser(socketid)
+    if (receiveuser) {
+      io.emit("recive", { data, socketid, code })
     }
-  });
+  })
 
   socket.on("disconnect", () => {
     removeUser(socket.id);
-  });
-});
 
-// Start the server on port 8000
-try {
-  app.listen(8000, () => {
-    console.log("Server running on port 8000");
-  });
-} catch (error) {
-  console.error("Error starting the server:", error.message);
-}
+  })
+
+})
+
+server.listen(port, () => {
+  console.log(`server start ${port}`);
+
+})

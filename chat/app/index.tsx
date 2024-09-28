@@ -2,6 +2,7 @@ import { useNavigation } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { View, TextInput, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import { io } from "socket.io-client";
+import { SocketContext } from "./SocketContect";
 // import { SocketContext } from "./SocketContect";
 
 
@@ -9,13 +10,12 @@ import { io } from "socket.io-client";
 export default function Index() {
   // const SOCKET_SERVER_URL = "http://localhost:8000";
 
-  const [socket, setSocket] = useState(null);
   const [message, setMessage] = useState("");
 
 
   const [inputValue, setInputValue] = useState('');
+  const [inputCode, setInputCode] = useState('');
   const navigation = useNavigation();
-  // const { socket } = useContext(SocketContext);
   // Handle submit button press
   const handleSubmit = () => {
     // if (inputValue.trim() === '') {
@@ -23,10 +23,9 @@ export default function Index() {
     // } else {
     //   Alert.alert('Submitted', `You entered: ${inputValue}`);
     //   setInputValue('');
-    socket?.emit("newUser", inputValue);
+    
 
-    // navigation.navigate('login/index')
-    // }
+    navigation.navigate('login/index', { code: inputCode })
   };
 
   // useEffect(() => {
@@ -37,32 +36,16 @@ export default function Index() {
   //    socket?.("newUser", 5);
   // }, [socket]);
 
-  useEffect(() => {
-    const socketInstance = io("http://192.168.36.50:8000", {
-      transports: ['websocket'],
-    });
-    setSocket(socketInstance);
-
-
-    // Listen for messages from the server
-    // socketInstance?.emit("newUser", 5);
-
-    // Cleanup on component unmount
-    return () => {
-      // Cleanup on component unmount
-      if (socketInstance) socketInstance.disconnect();
-    };
-  }, []);
 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Enter your name:</Text>
+      <Text style={styles.label}>Enter your code:</Text>
       <TextInput
         style={styles.input}
         placeholder="Type here..."
-        value={inputValue}
-        onChangeText={(text) => setInputValue(text)}
+        value={inputCode}
+        onChangeText={(text) => setInputCode(text)}
       />
 
       {/* Submit Button */}
